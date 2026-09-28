@@ -1,0 +1,2 @@
+pair_id,product_a_id,product_a_name,product_b_id,product_b_name,group_name,relationship_type,match_level,priority,active,valid_from,valid_to,source,comment,approved_by,approved_at
+P-DEMO-001,,Семга стейк,,Форель стейк,Рыба стейк,requires_manual_review,name_normalized,10,1,,,example,Пример из постановки. Не подтверждён для автоматического уменьшения недостачи. После согласования смените тип и заполните approved_by.,,

@@ -1,0 +1,10 @@
+rule_id,match_field,match_value,scope,include_in_production_score,include_in_store_rating,include_in_shortage_top,include_in_regrading,classification_reason,source,active,comment
+R-HOZ-L0,level_0,Хоз нужды,household_supply,0,0,0,0,Корень иерархии «Хоз нужды»,hierarchy_rule,1,Исключается из операционного рейтинга СП. Остаётся в финансовой сверке.
+R-PKG-NAME,name_contains,упаков,packaging,0,0,0,0,В наименовании есть «упаков»,keyword_rule,1,Требует подтверждения при ложных срабатываниях. Правило редактируется.
+R-PACK-NAME,name_contains,пакет,packaging,0,0,0,0,В наименовании есть «пакет»,keyword_rule,1,Требует подтверждения при ложных срабатываниях.
+R-TARA,name_contains,тара,container,0,0,0,0,В наименовании есть «тара»,keyword_rule,1,Требует подтверждения при ложных срабатываниях.
+R-CONT,name_contains,контейнер,container,0,0,0,0,В наименовании есть «контейнер»,keyword_rule,1,Требует подтверждения при ложных срабатываниях.
+R-CONS,name_contains,расходн,consumable,0,0,0,0,В наименовании есть «расходн»,keyword_rule,1,Требует подтверждения при ложных срабатываниях.
+R-ING-L1,level_1,Ингредиенты произ,own_production_ingredient,1,1,1,1,Уровень иерархии ингредиентов собственного производства,hierarchy_rule,1,Включается в основной контур СП.
+R-RAW-L1,level_1,Сырьё произ,own_production_raw_material,1,1,1,1,Уровень иерархии сырья собственного производства,hierarchy_rule,1,Включается в основной контур СП.
+R-FG-L0,level_0,Производство Зеленого яблока,finished_goods,1,1,1,1,Готовая продукция ветки собственного производства,hierarchy_rule,1,"Явно включено флагом справочника. Чтобы убрать из рейтинга, поставьте include_in_store_rating=0."
