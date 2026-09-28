@@ -1,0 +1,4 @@
+family_id,family_name,token_or_sku,token_type,related_family_id,relationship_type,compatibility_level,requires_same_cut,requires_same_state,requires_same_unit,conversion_allowed,default_approval_status,source,comment,active
+FAM-SALMON,лососевые,семга,token,,same_product_family,medium,1,1,1,0,requires_manual_review,example,Вид внутри семейства. Сам по себе пару не создает.,1
+FAM-SALMON,лососевые,форель,token,,same_product_family,medium,1,1,1,0,requires_manual_review,example,Вид внутри семейства. Сам по себе пару не создает.,1
+FAM-SALMON,лососевые,лосось,token,,same_product_family,medium,1,1,1,0,requires_manual_review,example,Вид внутри семейства. Сам по себе пару не создает.,1

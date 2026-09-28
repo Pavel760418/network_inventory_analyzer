@@ -12,6 +12,7 @@ from openpyxl.chart.label import DataLabelList
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
+from config.settings import PAIR_POOL_WARNING
 from src.excel.styles import ACCENT, BD, DF, HD, SF, SUM, WH, tc
 from src.network_inventory_analyzer.category_reserve import METHOD
 
@@ -156,7 +157,7 @@ def export_workbook(bundle: Dict[str, Any]) -> bytes:
         ("Излишки_полный_список", "Излишки — полный список", "100% строк с излишком.", bundle["surpluses"]),
         ("Пересорты_полный_список", "Пересорты по справочнику", "Подтверждённые и кандидаты. Кандидат недостачу не уменьшает.", bundle["regrades"]),
         ("Перекрытия_полный_список", "Перекрытия v4 внутри магазина", "Действующий однородный алгоритм, без обрезки 500 строк.", bundle["legacy_overlap"]),
-        ("Кандидаты_на_пересорт", "Кандидаты на пересорт", "requires_manual_review и неподтверждённые типы.", bundle["candidates"]),
+        ("Кандидаты_на_пересорт", "Кандидаты на пересорт", _candidate_subtitle(bundle), bundle["candidates"]),
         ("Оприход_излишки_Резюме", "Оприходованные излишки — резюме", "Полное имя листа в этой строке.", bundle["posted_summary"]),
         ("Оприход_излишки_Связанные", "Оприходованные излишки — связанные", "Группа A.", bundle["posted_linked"]),
         ("Оприход_излишки_Кандидаты", "Оприходованные излишки — кандидаты", "Группа B. Ущерб не уменьшается.", bundle["posted_candidates"]),
@@ -189,6 +190,14 @@ def export_workbook(bundle: Dict[str, Any]) -> bytes:
     bio = BytesIO()
     wb.save(bio)
     return bio.getvalue()
+
+
+def _candidate_subtitle(bundle: Dict[str, Any]) -> str:
+    stats = bundle.get("pair_search") or {}
+    base = "Кандидаты не уменьшают недостачу, пока approval_status не равен approved и auto_apply не включён."
+    if stats.get("limited"):
+        return f"{base} {PAIR_POOL_WARNING} {stats.get('completeness_text', '')}"
+    return base
 
 
 def _beef_overlap(bundle: Dict[str, Any]) -> pd.DataFrame:

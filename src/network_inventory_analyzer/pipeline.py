@@ -22,6 +22,7 @@ from src.network_inventory_analyzer.regrading import (
     build_dictionary_regrades,
     candidate_regrades,
 )
+from src.network_inventory_analyzer.product_matching import merge_pair_catalog, suggest_related_pairs
 from src.network_inventory_analyzer.related_pairs import load_pairs, pair_issues
 from src.network_inventory_analyzer.scope_classifier import (
     classify_lines,
@@ -38,6 +39,9 @@ def analyze(
     period_days: int = 30,
     end_date: Optional[datetime.date] = None,
     capitalization_path: Optional[str | Path] = None,
+    matching_mode: Optional[str] = None,
+    max_candidate_comparisons: Optional[int] = None,
+    max_items_per_side: Optional[int] = None,
 ) -> Dict[str, Any]:
     lines, meta, notes = load_inventory(inventory_path, period_days, end_date)
     lines = classify_lines(lines)
@@ -46,6 +50,17 @@ def analyze(
     rating_scope = lines[lines["include_in_store_rating"] == True].copy()  # noqa: E712
     legacy = build_operational_overlaps(rating_scope) if not rating_scope.empty else pd.DataFrame()
     pairs = load_pairs()
+    suggested, pair_search = suggest_related_pairs(
+        lines["наименование"].astype(str).unique(),
+        mode=matching_mode,
+        max_candidate_comparisons=max_candidate_comparisons,
+        max_items_per_side=max_items_per_side,
+    )
+    pairs = merge_pair_catalog(pairs, suggested)
+    approved_count = 0
+    if not pairs.empty and "approval_status" in pairs.columns:
+        approved_count = int(pairs["approval_status"].astype(str).str.lower().eq("approved").sum())
+    pair_search["approved"] = approved_count
     regrades = build_dictionary_regrades(lines, pairs, legacy)
     applied = applied_regrades(regrades)
     candidates = candidate_regrades(regrades)
@@ -100,6 +115,7 @@ def analyze(
         "unclassified": unclassified,
         "quality": quality,
         "period_days": period_days,
+        "pair_search": pair_search,
     }
     bundle["kpi"] = kpis(bundle)
     bundle["conclusions"] = conclusions(bundle)

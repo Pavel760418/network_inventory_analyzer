@@ -30,14 +30,28 @@ def load_pairs(path: Optional[Path] = None) -> pd.DataFrame:
 
 
 def pair_decision(row: pd.Series) -> str:
+    """Автоперекрытие только у active-пары со статусом approved и auto_apply."""
     active = str(row.get("active", "1")).strip().lower() in ("1", "true", "yes", "да", "y")
     if not active:
         return STATUS_REJECTED
+    approval = str(row.get("approval_status", "")).strip().lower()
+    auto_raw = row.get("auto_apply", "")
+    auto_text = str(auto_raw).strip().lower()
+    auto_known = auto_text not in ("", "nan", "none")
+    auto_apply = auto_text in ("1", "true", "yes", "да", "y")
     rel = str(row.get("relationship_type", "")).strip()
-    approved = str(row.get("approved_by", "")).strip()
-    if rel == "requires_manual_review" or not approved or rel not in AUTO_PAIR_TYPES:
-        if rel == "requires_manual_review" or not approved:
-            return STATUS_REVIEW
+    if approval in ("rejected", "отклонено", "expired"):
+        return STATUS_REJECTED
+    if approval in ("requires_manual_review", "требует ручной проверки"):
+        return STATUS_REVIEW
+    if approval == "approved" and auto_apply and (rel in AUTO_PAIR_TYPES or rel == ""):
+        return STATUS_AUTO
+    if approval == "approved":
+        return STATUS_REVIEW
+    approved_by = str(row.get("approved_by", "")).strip()
+    if rel == "requires_manual_review" or not approved_by or rel not in AUTO_PAIR_TYPES:
+        return STATUS_REVIEW
+    if auto_known and not auto_apply:
         return STATUS_REVIEW
     return STATUS_AUTO
 

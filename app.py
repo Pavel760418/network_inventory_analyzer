@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from config.settings import PAIR_POOL_WARNING
 from src.network_inventory_analyzer import __version__
 from src.network_inventory_analyzer.category_reserve import METHOD
 from src.network_inventory_analyzer.excel_exporter import export_workbook
@@ -39,8 +40,15 @@ def _save_upload(uploaded) -> Path:
     return Path(tmp.name)
 
 
-def _load_bundle(inventory: Path, capitalization: Path | None, period: int):
-    return analyze(inventory, period_days=period, capitalization_path=capitalization)
+def _load_bundle(inventory: Path, capitalization: Path | None, period: int, mode: str, comparisons: int, per_side: int):
+    return analyze(
+        inventory,
+        period_days=period,
+        capitalization_path=capitalization,
+        matching_mode=mode,
+        max_candidate_comparisons=comparisons,
+        max_items_per_side=per_side,
+    )
 
 
 def _filters(df: pd.DataFrame, key: str) -> pd.DataFrame:
@@ -202,6 +210,13 @@ def main() -> None:
     with st.sidebar:
         st.header("Данные")
         period = st.number_input("Период, дней", min_value=1, max_value=365, value=30)
+        matching_mode = st.selectbox(
+            "Режим сопоставления пар",
+            ["safe_default", "extended", "full_manual_review"],
+            help="safe_default ограничивает пул. extended и full_manual_review расширяют поиск, но кандидаты всё равно не уменьшают недостачу.",
+        )
+        max_comparisons = st.number_input("Максимум сравнений кандидатов", min_value=100, max_value=2_000_000, value=50_000, step=1000)
+        max_per_side = st.number_input("Максимум позиций в одном семействе", min_value=2, max_value=20_000, value=400, step=10)
         use_demo = st.checkbox("Синтетический пример", value=False)
         inventory = st.file_uploader("Инвентаризация, xlsx", type=["xlsx"])
         capitalization = st.file_uploader("Оприходование излишков, xlsx", type=["xlsx"])
@@ -224,7 +239,9 @@ def main() -> None:
             if capitalization is not None:
                 cap_path = _save_upload(capitalization)
             with st.spinner("Считаю контур собственного производства…"):
-                st.session_state["bundle"] = _load_bundle(inv_path, cap_path, int(period))
+                st.session_state["bundle"] = _load_bundle(
+                    inv_path, cap_path, int(period), matching_mode, int(max_comparisons), int(max_per_side)
+                )
         except ValueError as exc:
             st.error(str(exc))
             return
@@ -265,6 +282,20 @@ def main() -> None:
     with tabs[2]:
         page_generic(bundle, "surpluses", "Излишки", "Полный список излишков.", "наименование", "излишек_сумма")
     with tabs[3]:
+        search = bundle.get("pair_search") or {}
+        if search.get("limited"):
+            st.warning(PAIR_POOL_WARNING)
+            st.caption(search.get("completeness_text", ""))
+        else:
+            st.caption(search.get("completeness_text", "Кандидаты показаны отдельно и недостачу не уменьшают."))
+        st.caption(
+            f"Потенциальных сочетаний: {search.get('potential_rows', 0)}. "
+            f"Рассмотрено: {search.get('considered', 0)}. "
+            f"Исключено по несовместимости: {search.get('excluded_incompatible', 0)}. "
+            f"Исключено лимитом: {search.get('excluded_by_limit', 0)}. "
+            f"Предложено кандидатов: {search.get('suggested', 0)}. "
+            f"Утверждённых пар: {search.get('approved', 0)}."
+        )
         page_generic(bundle, "candidates", "Кандидаты на пересорт", "Эти строки не уменьшают недостачу.", "недостача_sku", "перекрытие_сум")
         st.markdown("**Подтверждённые пары справочника**")
         _show_table(bundle["applied_pairs"], "applied", "подтвержденные_пары")

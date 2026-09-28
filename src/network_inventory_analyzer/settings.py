@@ -11,6 +11,7 @@ SAMPLE_DIR = PACKAGE_ROOT / "sample_data"
 SCOPE_RULES = CONFIG_DIR / "scope_rules.csv"
 ITEM_SCOPE = CONFIG_DIR / "item_scope_classification.csv"
 RELATED_PAIRS = CONFIG_DIR / "related_product_pairs.csv"
+FAMILY_RULES = CONFIG_DIR / "product_family_rules.csv"
 BEEF_SCOPE = CONFIG_DIR / "beef_scope.csv"
 DEMO_INVENTORY = SAMPLE_DIR / "demo_inventory_synthetic.xlsx"
 
