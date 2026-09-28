@@ -1,0 +1,8 @@
+sku,name,category,scope,include_in_production_score,include_in_store_rating,include_in_shortage_top,include_in_regrading,classification_reason,source,active,comment
+,Семга стейк,Рыба,own_production_raw_material,1,1,1,1,Сырьё СП в демонстрационном справочнике,manual_demo,1,Синтетический пример. Замените на свои SKU.
+,Форель стейк,Рыба,own_production_raw_material,1,1,1,1,Сырьё СП в демонстрационном справочнике,manual_demo,1,Синтетический пример.
+,Говядина вырезка demo,Говядина,own_production_raw_material,1,1,1,1,Сырьё СП в демонстрационном справочнике,manual_demo,1,Синтетический пример.
+,Салат овощной СП demo,Кулинария,finished_goods,1,1,1,1,Готовая продукция СП явно включена флагом,manual_demo,1,Флаг можно выключить без правки кода.
+,Пакет майка,Упаковка,packaging,0,0,0,0,Упаковка исключена из операционного рейтинга,manual_demo,1,Сумма остаётся в финансовом блоке.
+,Контейнер пластиковый,Тара,container,0,0,0,0,Тара исключена из операционного рейтинга,manual_demo,1,Сумма остаётся в финансовом блоке.
+,Бульон говяжий demo,Бульоны,finished_goods,1,1,1,1,Готовая позиция демо. К говядине не относится без строки beef_scope,manual_demo,1,Спорная говядина задаётся отдельно в beef_scope.csv.

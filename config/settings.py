@@ -27,9 +27,46 @@ SCENARIO_LARGE_SHORTAGE = 50_000
 SCENARIO_MEDIUM_SHORTAGE = 10_000
 SCENARIO_WEIGHT_LOSS = 1_000
 
-# Performance guardrails for pair matching
+# Performance guardrails for pair matching (v4 cartesian pool — do not raise silently)
 PAIR_VOLUME_LIMIT = 2_500_000
 PAIR_HEAD_LIMIT = 1_200
+
+# Candidate search before any financial overlap. Defaults stay conservative.
+MATCHING_MODE = os.environ.get("MATCHING_MODE", "safe_default")
+MAX_CANDIDATE_COMPARISONS = int(os.environ.get("MAX_CANDIDATE_COMPARISONS", "50000"))
+MAX_ITEMS_PER_SIDE = int(os.environ.get("MAX_ITEMS_PER_SIDE", "400"))
+
+PAIR_POOL_WARNING = (
+    "Полный перебор потенциальных пар ограничен для защиты времени расчёта. "
+    "При превышении порога используется приоритизированный пул кандидатов. "
+    "Результат потенциальных пересортов может не включать низкоприоритетные сопоставления. "
+    "Для полного расчёта необходим расширенный режим."
+)
+
+
+def matching_limits(
+    mode: str | None = None,
+    max_candidate_comparisons: int | None = None,
+    max_items_per_side: int | None = None,
+) -> dict:
+    """Лимиты поиска кандидатов. Явные аргументы интерфейса важнее .env."""
+    _load_dotenv()
+    selected = (mode or os.environ.get("MATCHING_MODE") or MATCHING_MODE).strip()
+    comparisons = int(max_candidate_comparisons or os.environ.get("MAX_CANDIDATE_COMPARISONS") or MAX_CANDIDATE_COMPARISONS)
+    per_side = int(max_items_per_side or os.environ.get("MAX_ITEMS_PER_SIDE") or MAX_ITEMS_PER_SIDE)
+    if max_candidate_comparisons is None and selected == "extended":
+        comparisons = max(comparisons, 200_000)
+    if max_items_per_side is None and selected == "extended":
+        per_side = max(per_side, 2_000)
+    if max_candidate_comparisons is None and selected == "full_manual_review":
+        comparisons = max(comparisons, 1_000_000)
+    if max_items_per_side is None and selected == "full_manual_review":
+        per_side = max(per_side, 5_000)
+    return {
+        "mode": selected,
+        "max_candidate_comparisons": comparisons,
+        "max_items_per_side": per_side,
+    }
 
 # Overlap export limit
 OVERLAP_EXPORT_ROWS = 500
